@@ -1,2 +1,2 @@
 # Testing GIT
-# And again - patch time
+# And again - where is the commit?

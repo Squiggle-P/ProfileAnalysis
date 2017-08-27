@@ -20,9 +20,10 @@ BWBinLimits = [15,30]
 MoiBinLimits = [3,17]
 ScanCountLimits = [70,200]
 
-def CSV2Arrays(csvfile):
+def CSV2Arrays(csvfile,ReturnDict = False):
     """ Opens a CSV file, reads it, returns an array of dictionaries with header keys"""
     ArrayOfArrays = []
+    DictOfArrays = {}
     RawRead = []
     with open('TestData.csv','rb') as CSVFile:
         CSVReader = csv.reader(CSVFile,delimiter=',')
@@ -52,8 +53,12 @@ def CSV2Arrays(csvfile):
             #Temp = [HeaderArray]
 
     #print ArrayOfArrays
-
-    return ArrayOfArrays
+    if not ReturnDict:
+        return ArrayOfArrays
+    else:
+        for dataset in ArrayOfArrays:
+            DictOfArrays[dataset[1][0]] = dataset
+        return DictOfArrays
 
 def ScrubArrays(HeaderArray,ReelArrays,*Limits, **OtherLimits):
 
@@ -84,19 +89,21 @@ if __name__ == "__main__":
     print "Hello World"
     UnknownArrays = []
     # Import CSVs and process into arrays - hardcoded.
-    for dataset in CSV2Arrays("TestData.csv"):
-        #print dataset[1][0]
-        if dataset[1][0] == 'RL.BSWT (7)':
-            BWArray = dataset
-        elif dataset[1][0] == 'RL.MST (10)':
-            MoiArray = dataset
-        elif dataset[1][0] == 'RL.CNDWT (13)':
-            CWArray = dataset
-        elif dataset[1][0] == 'CTRL.HBDILFB (97)':
-            ActArray = dataset
-        else:
-            UnknownArrays.append(dataset)
-            print "Unknown Array %s found and logged as UnknownArrays[%s]" % (dataset[1][0], len(UnknownArrays)-1)
+    # for dataset in CSV2Arrays("TestData.csv"):
+    #     #print dataset[1][0]
+    #     if dataset[1][0] == 'RL.BSWT (7)':
+    #         BWArray = dataset
+    #     elif dataset[1][0] == 'RL.MST (10)':
+    #         MoiArray = dataset
+    #     elif dataset[1][0] == 'RL.CNDWT (13)':
+    #         CWArray = dataset
+    #     elif dataset[1][0] == 'CTRL.HBDILFB (97)':
+    #         ActArray = dataset
+    #     else:
+    #         UnknownArrays.append(dataset)
+    #         print "Unknown Array %s found and logged as UnknownArrays[%s]" % (dataset[1][0], len(UnknownArrays)-1)
+
+    TestDict = CSV2Arrays("TestData.csv",True)
 
     # Clean the arrays up
     ScrubArrays(BWArray[0],BWArray[2:], BWLim = BWBinLimits, CWLim = CWBinLimits, MoiLim = MoiBinLimits, ScanLim = ScanCountLimits)

@@ -103,7 +103,7 @@ if __name__ == "__main__":
     #         UnknownArrays.append(dataset)
     #         print "Unknown Array %s found and logged as UnknownArrays[%s]" % (dataset[1][0], len(UnknownArrays)-1)
 
-    TestDict = CSV2Arrays("TestData.csv",True)
+    # TestDict = CSV2Arrays("TestData.csv",True)
 
     # Clean the arrays up
     ScrubArrays(BWArray[0],BWArray[2:], BWLim = BWBinLimits, CWLim = CWBinLimits, MoiLim = MoiBinLimits, ScanLim = ScanCountLimits)

@@ -79,10 +79,76 @@ def ScrubArrays(HeaderArray,ReelArrays,*Limits, **OtherLimits):
   StartCol = HeaderArray.index("Pos_1")
   EndCol = HeaderArray.index("Pos_1120")
 
+def ConvertPossibleToFloat(item):
+    try:
+        item = float(item)
+    except ValueError:
+        pass
+    return item
 
-def VerifyReelStreaking(HeaderArray,ReelArray,*Limits,**OtherLimits):
+def ScrubStandardDictionary(ScrubMe,
+                            LowScanLimit = 0, HighScanLimit = 0,
+                            LowWtLimit = 0, HighWtLimit = 0,
+                            LowMoiLimit = 0, HighMoiLimit = 0):
 
-    print "Hello World"
+    KeyList = ScrubMe.keys()
+    BadReelList = []
+
+    # First lets get rid of the name lines
+    for k,v in ScrubMe.iteritems():
+        v.pop(1)
+
+    # Now let's turn anything we can into a number. Stupid quotes.
+    for k,v in ScrubMe.iteritems():
+        for reel_index in range(len(v)):
+            for item_index in range(len(v[reel_index])):
+                v[reel_index][item_index] = ConvertPossibleToFloat(v[reel_index][item_index])
+
+
+
+    # Next lets ID any reels with bad scan counts
+    if LowScanLimit or HighScanLimit:
+        ScanCol = ScrubMe[KeyList[0]][0].index('Number of Scans')
+        for reel in ScrubMe[KeyList[0]][1:]:
+            if int(reel[ScanCol]) < LowScanLimit or int(reel[ScanCol]) > HighScanLimit:
+                BadReelList.append(reel[0])
+
+    # And any reels with bad moisture averages
+    if LowMoiLimit or HighMoiLimit:
+        MoistureKey = 'RL.MST (10)'
+        try:
+            ScrubMe[MoistureKey]
+        except KeyError:
+            MoistureKey = input("%s doesn't seem to exist - what's your moisture data called?\n" % MoistureKey)
+
+        MoiCol = ScrubMe[MoistureKey][0].index('Reel Average')
+        for reel in ScrubMe[MoistureKey][1:]:
+            if float(reel[MoiCol]) < LowMoiLimit or float(reel[MoiCol]) > HighMoiLimit:
+                print reel[MoiCol]
+                BadReelList.append(reel[0])
+
+    # Aaaand reels with bad weight averages...
+    if LowWtLimit or HighWtLimit:
+        WeightKey = 'RL.BSWT (7)'
+        try:
+            ScrubMe[WeightKey]
+        except KeyError:
+            WeightKey = input("%s doesn't seem to exist - what's your weight data called?\n" % WeightKey)
+
+        BWCol = ScrubMe[WeightKey][0].index('Reel Average')
+        for reel in ScrubMe[WeightKey][1:]:
+            if float(reel[BWCol]) < LowWtLimit or float(reel[BWCol]) > HighWtLimit:
+                print reel[BWCol]
+
+
+    # Now with that list, let's remove the offending reels from every dataset.
+    if len(BadReelList) > 0:
+        for k, v in ScrubMe.iteritems():
+            for reel_index in range(len(v)-1):
+                if v[reel_index][0] in BadReelList:
+                    v.pop(reel_index)
+
+    return ScrubMe
 
 
 if __name__ == "__main__":
@@ -103,9 +169,8 @@ if __name__ == "__main__":
     #         UnknownArrays.append(dataset)
     #         print "Unknown Array %s found and logged as UnknownArrays[%s]" % (dataset[1][0], len(UnknownArrays)-1)
 
-    # TestDict = CSV2Arrays("TestData.csv",True)
+    DatasetDictionary = CSV2Arrays("TestData.csv",True)
+    DatasetDictionary = ScrubStandardDictionary(DatasetDictionary,LowMoiLimit = MoiBinLimits[0], HighMoiLimit = MoiBinLimits[1],
+                            LowWtLimit = BWBinLimits[0], HighWtLimit=BWBinLimits[1],
+                            LowScanLimit=ScanCountLimits[0], HighScanLimit=ScanCountLimits[1])
 
-    # Clean the arrays up
-    ScrubArrays(BWArray[0],BWArray[2:], BWLim = BWBinLimits, CWLim = CWBinLimits, MoiLim = MoiBinLimits, ScanLim = ScanCountLimits)
-
-    # print numpy.mean(BWArray[2][100:200])

@@ -21,7 +21,12 @@ MoiBinLimits = [3,17]
 ScanCountLimits = [70,200]
 
 def CSV2Arrays(csvfile,ReturnDict = False):
-    """ Opens a CSV file, reads it, returns an array of dictionaries with header keys"""
+    """
+    Opens a CSV file,r eads it, and returns an array or dictionaries. Dict should be preferred.
+    :param csvfile: string with address of csv file
+    :param ReturnDict: Boolean - True if you want a dict, False if you want an array
+    :return: Dict or Array
+    """
     ArrayOfArrays = []
     DictOfArrays = {}
     RawRead = []
@@ -31,17 +36,16 @@ def CSV2Arrays(csvfile,ReturnDict = False):
             RawRead.append(line)
     # File read, close it up
 
+    # Mark the header and replace it with zeros just to make the next loop cleaner
     HeaderArray = RawRead[0]
 
     RawRead[0] = numpy.zeros((len(RawRead[0])),dtype=numpy.int8)
-    #print RawRead[0]
-    #print HeaderArray
 
+    # Store in temporary list to write to dictionary - reduces memory load
     Temp = [HeaderArray]
 
     for line in range(len(RawRead))[1:]:
-#        print RawRead[line]
-#        print RawRead[line][0]
+
         if RawRead[line][0]:
             Temp.append(RawRead[line])
         elif RawRead[line+1][0]:
@@ -61,25 +65,34 @@ def CSV2Arrays(csvfile,ReturnDict = False):
         return DictOfArrays
 
 def ScrubArrays(HeaderArray,ReelArrays,*Limits, **OtherLimits):
+    """
+    :param HeaderArray:
+    :param ReelArrays:
+    :param Limits:
+    :param OtherLimits:
+    :return:
+    """
+    TimeCol = HeaderArray.index("Turnup Time")
+    try:
+      ReelNumCol = HeaderArray.index("PPR Reel Number")
+    except ValueError:
+        try:
+            ReelNumCol = HeaderArray.index("Gauge Reel Number")
+            print "PPR Reel Numbers are preferred but not found - using Gauge Reel Number"
+        except ValueError:
+            print "Could not find Reel Number - proceeding without."
 
-
-  print "Hello World"
-  TimeCol = HeaderArray.index("Turnup Time")
-  try:
-    ReelNumCol = HeaderArray.index("PPR Reel Number")
-  except ValueError:
-      try:
-          ReelNumCol = HeaderArray.index("Gauge Reel Number")
-          print "PPR Reel Numbers are preferred but not found - using Gauge Reel Number"
-      except ValueError:
-          print "Could not find Reel Number - proceeding without."
-
-  # TimeCol = HeaderArray.index("PPR Reel Number")
-  ScanCol = HeaderArray.index("Number of Scans")
-  StartCol = HeaderArray.index("Pos_1")
-  EndCol = HeaderArray.index("Pos_1120")
+    # TimeCol = HeaderArray.index("PPR Reel Number")
+    ScanCol = HeaderArray.index("Number of Scans")
+    StartCol = HeaderArray.index("Pos_1")
+    EndCol = HeaderArray.index("Pos_1120")
 
 def ConvertPossibleToFloat(item):
+    """
+    If this breaks, replace it with pandas
+    :param item: string
+    :return: float version of that string
+    """
     try:
         item = float(item)
     except ValueError:
@@ -90,6 +103,16 @@ def ScrubStandardDictionary(ScrubMe,
                             LowScanLimit = 0, HighScanLimit = 0,
                             LowWtLimit = 0, HighWtLimit = 0,
                             LowMoiLimit = 0, HighMoiLimit = 0):
+    """
+    :param ScrubMe: Dict to be scrubbed
+    :param LowScanLimit: # of scans that's too few
+    :param HighScanLimit: # of scans that's too many
+    :param LowWtLimit: lbs of weight to ignore reel
+    :param HighWtLimit: lbs of weight to ignore reel
+    :param LowMoiLimit: % Moi that ignores reel
+    :param HighMoiLimit: % Moi that ignors reel
+    :return: Dictionary with reels removed for having bad data
+    """
 
     KeyList = ScrubMe.keys()
     BadReelList = []
@@ -148,29 +171,41 @@ def ScrubStandardDictionary(ScrubMe,
                 if v[reel_index][0] in BadReelList:
                     v.pop(reel_index)
 
+                    # Alternative is to pop from the back
     return ScrubMe
+
+def JustTheData(DictionaryIn):
+    # Take in dictionary of datasets, spit out dictionary with only timestamp and pos1-pos1120
+
+    NewDict = {}
+
+    for k,v in DictionaryIn.iteritems():
+        TempArrayArray = []
+        for reel_index in range(len(v)-1):
+            if reel_index == 0:
+                # DateIndex = v[reel_index].index("Turnup Time")
+                PosFirstIndex = v[reel_index].index("Pos_1")
+                PosLastIndex = v[reel_index].index("Pos_1120")
+            else:
+                TempArrayArray.append(v[reel_index][PosFirstIndex:PosLastIndex])
+
+            # for item_index in range(len(v[reel_index])-1):
+
+                # if item_index <> DateIndex and (item_index < PosFirstIndex or item_index > PosLastIndex):
+                #     print v[reel_index].pop(item_index)
+
+        NewDict[k] = TempArrayArray
+
+    return NewDict
 
 
 if __name__ == "__main__":
     print "Hello World"
-    UnknownArrays = []
-    # Import CSVs and process into arrays - hardcoded.
-    # for dataset in CSV2Arrays("TestData.csv"):
-    #     #print dataset[1][0]
-    #     if dataset[1][0] == 'RL.BSWT (7)':
-    #         BWArray = dataset
-    #     elif dataset[1][0] == 'RL.MST (10)':
-    #         MoiArray = dataset
-    #     elif dataset[1][0] == 'RL.CNDWT (13)':
-    #         CWArray = dataset
-    #     elif dataset[1][0] == 'CTRL.HBDILFB (97)':
-    #         ActArray = dataset
-    #     else:
-    #         UnknownArrays.append(dataset)
-    #         print "Unknown Array %s found and logged as UnknownArrays[%s]" % (dataset[1][0], len(UnknownArrays)-1)
+
 
     DatasetDictionary = CSV2Arrays("TestData.csv",True)
     DatasetDictionary = ScrubStandardDictionary(DatasetDictionary,LowMoiLimit = MoiBinLimits[0], HighMoiLimit = MoiBinLimits[1],
                             LowWtLimit = BWBinLimits[0], HighWtLimit=BWBinLimits[1],
                             LowScanLimit=ScanCountLimits[0], HighScanLimit=ScanCountLimits[1])
 
+    DataOnlyDictionary = JustTheData(DatasetDictionary)

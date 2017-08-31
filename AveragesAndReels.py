@@ -68,3 +68,15 @@ if __name__ == "__main__":
 
     for k,v in DataOnlyDictionary.iteritems():
         ReelAveragesDict[k] = RollAverages(v)
+        print ReelAveragesDict[k]
+
+    for k, v in DataOnlyDictionary.iteritems():
+        othertempthing = ChunkList(v[0], 122)
+        tempthing = RollAverages(v, 122)
+
+    counter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+    for i in othertempthing:
+        counter[len(i)] = counter[len(i)] + 1
+
+    print counter

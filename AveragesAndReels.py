@@ -67,14 +67,54 @@ def RollAverages(ArrayOfReels,NumOfRolls=3):
 
     return ArrayOfAverages
 
+
+def AverageReel(RawReel, ChunkCount):
+    AvgList = []
+    ChunkedReel = ChunkList(RawReel, ChunkCount)
+    for chunk in ChunkedReel:
+        AvgList.append(numpy.mean(chunk))
+    return AvgList
+
+
+def AdjustProfile(InitialProfile, ChangeProfile, Gain):
+    """
+    This function applies <ChangeProfile>*Gain effects to <InitialProfile> and spits it back out
+    :param InitialProfile: One list of cleaned profile data (no nan support)
+    :param ChangeProfile: A list of the changes to an actuator array - length irrelevant
+    :param Gain: Gain of the actuator on the profile data entered
+    :return: List of new profile bin data w/ gain applied
+    """
+
+    NumOfChunks = len(ChangeProfile)
+    NewProfile = []
+    ChunkedProfile = ChunkList(InitialProfile, NumOfChunks)
+
+    # Take a profile broken into actuator-associated chunks, apply changes based on movements in actuator
+    # This is all assuming a flat response from the actuator. Let's not get any deeper, shall we?
+    for chunk_index in xrange(len(ChunkedProfile)):
+        for bin_index in xrange(len(ChunkedProfile[chunk_index])):
+            ChunkedProfile[chunk_index][bin_index] = ChunkedProfile[chunk_index][bin_index] + ChangeProfile[
+                                                                                                  chunk_index] * Gain
+
+    # Unchunk the data and return
+    for chunk in ChunkedProfile:
+        for bin in chunk:
+            NewProfile.append(bin)
+
+    return NewProfile
+
 if __name__ == "__main__":
     print "Hello World"
+
+    import csv
 
     CWBinLimits = [15, 30]
     BWBinLimits = [15, 30]
     MoiBinLimits = [3, 17]
     ScanCountLimits = [70, 200]
     ReelAveragesDict = {}
+    CPAverages = {}
+    SBAverages = {}
 
     # Interface back to PR and pull data from CSV
 
@@ -85,13 +125,33 @@ if __name__ == "__main__":
 
     DataOnlyDictionary = PR.JustTheData(DatasetDictionary)
 
-    for k,v in DataOnlyDictionary.iteritems():
-        ReelAveragesDict[k] = RollAverages(v)
-        print ReelAveragesDict[k]
-    ActuatorAverages = {}
+    # Save all current roll and actuator averages in CSV for export use
+    with open('RealRollAverages.csv', 'wb') as csvfile:
+        writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
+        for k, v in DataOnlyDictionary.iteritems():
+            ReelAveragesDict[k] = RollAverages(v)
+            writeobject.writerow([k])
+            for reel in ReelAveragesDict[k]:
+                writeobject.writerow(reel)
 
-    for k, v in DataOnlyDictionary.iteritems():
-        ActuatorAverages[k] = RollAverages(v, 122)
+    with open('RealCPAverages.csv', 'wb') as csvfile:
+        writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
+        for k, v in DataOnlyDictionary.iteritems():
+            CPAverages[k] = RollAverages(v, 122)
+            writeobject.writerow([k])
+            for actuatorbin in CPAverages[k]:
+                writeobject.writerow(actuatorbin)
+
+    with open('ReelSBAverages.csv', 'wb') as csvfile:
+        writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
+        for k, v in DataOnlyDictionary.iteritems():
+            SBAverages[k] = RollAverages(v, 88)
+            writeobject.writerow([k])
+            for actuatorbin in SBAverages[k]:
+                writeobject.writerow(actuatorbin)
+
+
+
 
         # Enable this to quickly report how many chunks of each length were spit out
         # counter = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

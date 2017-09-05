@@ -10,12 +10,14 @@ ScanCountLimits = [70, 200]
 CPActNum = 122
 SBActNum = 88
 RollsPerReel = 3
+StartingSBPos = 40
 #
 # Actuator gains - taken from MX controller
 CPBWGain = -0.1328
 CPCWGain = -0.0783
 CPMoiGain = -0.1866
-SBMoiGain = -0.0105
+#SBMoiGain = -0.0105 # This produced a negligible impact on moisture profiles.
+SBMoiGain = -.02
 #
 # If OutputCSVs == True, major profile datasets will be stored as CSVs. Recommend doing this for further analysis in
 # Minitab or elsewhere.

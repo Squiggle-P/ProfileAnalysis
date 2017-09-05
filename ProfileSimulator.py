@@ -23,6 +23,11 @@ if __name__ == "__main__":
                   "RL.CNDWT (13)": CPCWGain,
                   "CTRL.HBDILFB (97)": 1}
 
+    SBGainDict = {"RL.BSWT (7)": 0,
+                  "RL.MST (10)": SBMoiGain,
+                  "RL.CNDWT (13)": 0,
+                  "CTRL.HBDILFB (97)": 0}
+
     # Get Reels
     DatasetDictionary = PR.CSV2Arrays(RawDataFile, True)
 
@@ -67,7 +72,6 @@ if __name__ == "__main__":
                     writeobject.writerow(actuatorbin)
 
     # Normalize CWT using CDActuators
-    CD_Act_Changes = []
     All_Act_Changes = []
     # Iterate through reels CWT profiles, making adjustments to actuators. We can ignore actuator limits here (right?)
     for reel in DatasetDictionary["RL.CNDWT (13)"]:
@@ -98,5 +102,47 @@ if __name__ == "__main__":
                 writeobject.writerow([k])
                 for reel in v:
                     writeobject.writerow(reel)
+
+    # Iterate through reels MOI profiles - making adjustments to SB actuators.
+    InitialSBProfile = [StartingSBPos] * SBActNum # Use this to get the most profiling
+    All_Act_Changes = []
+    SteamboxDataset = []
+    for reel in TemporaryDatasetDictionary["RL.MST (10)"]:
+        ReelAvg = numpy.mean(reel)
+        ChunkAverageReel = AAR.AverageReel(reel, SBActNum)
+        ActChange = []
+        for chunk in ChunkAverageReel:
+            ActChange.append((ReelAvg - chunk) * (1 / SBMoiGain))
+
+        # Make sure nothing is outside of physical limits
+        for i in xrange(len(ActChange)):
+            if ActChange[i] > 100-StartingSBPos:
+                ActChange[i] = 100 - StartingSBPos
+            elif ActChange[i] < 0-StartingSBPos:
+                ActChange[i] = 0-StartingSBPos
+
+        SteamboxDataset.append([x+50 for x in ActChange])
+        All_Act_Changes.append(ActChange)
+
+    # Apply adjustments to everything
+    PostSBDict = {}
+    for k, v in TemporaryDatasetDictionary.iteritems():
+        AdjustedReels = []
+        for reel_i in xrange(len(v)):
+            AdjustedReels.append(AAR.AdjustProfile(v[reel_i],All_Act_Changes[reel_i],SBGainDict[k]))
+        PostSBDict[k] = AdjustedReels
+    PostSBDict["CTRL.STMBX (??)"] = SteamboxDataset
+    CPGainDict["CTRL.STMBX (??)"] = 0
+    SBGainDict["CTRL.STMBX (??)"] = 1
+
+    if OutputCSVs:
+        with open(PostSBAdjustmentDataFile, 'wb') as csvfile:
+            writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
+            for k, v in PostSBDict.iteritems():
+                writeobject.writerow([k])
+                for reel in v:
+                    writeobject.writerow(reel)
+
+
 
     print "Hello World"

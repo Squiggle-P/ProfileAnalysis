@@ -5,6 +5,7 @@ CWBinLimits = [15, 30]
 BWBinLimits = [15, 30]
 MoiBinLimits = [3, 17]
 ScanCountLimits = [70, 200]
+GoodGradeList = ["3587802300NAT DF"]
 #
 # CD Sizing Data
 CPActNum = 122
@@ -22,11 +23,17 @@ SBMoiGain = -.02
 # If OutputCSVs == True, major profile datasets will be stored as CSVs. Recommend doing this for further analysis in
 # Minitab or elsewhere.
 OutputCSVs = True
+RebuildTables = False
+OutputRandomReelComparisons = True
+RandomReelNum = 5
+LowerMemoryUsage = True  # This won't help much - enable to clear dictonaries after they're last used.
 #
 # File names specified: These will be read/written regardless of OutputCSVs
-RawDataFile = "TestData.csv"
+RawDataFile = "PM2_Data_Set_All.csv"
+# RawDataFile = "TestData.csv"
 #
 # File names specified: These will be written if Output CSVs is true.
+StoreScrubbedHighResOriginal = "RealScrubbedHighRes.csv"
 StoreRealCPAverages = "RealCPAverages.csv"
 StoreRealRollAverages = "RealRollAverages.csv"
 StoreRealSBAverages = "RealSBAverages.csv"
@@ -37,3 +44,5 @@ StoreTemporaryCPAverages = "WeightWeightedCPAverages.csv"
 StoreAdjustedCPAverages = "NewCPAverages.csv"
 StoreAdjustedSBAverages = "NewSBAverages.csv"
 StoreNewRollAverages = "NewRollAverages.csv"
+StoreAdjustedRawData = "NewHighResProfiles.csv"
+ComparisonReels = "ComparisonReels.csv"

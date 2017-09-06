@@ -278,9 +278,9 @@ if __name__ == "__main__":
         for reel_index in xrange(len(TempList)):
             if len(TempList[reel_index]) == 1:
                 HeaderIndexList.append(reel_index)
-        print HeaderIndexList
+        # print HeaderIndexList
 
-        TotalNumReels = int((len(TempList) - 1) / len(HeaderIndexList))
+        TotalNumReels = int((len(TempList) / len(HeaderIndexList)) - len(HeaderIndexList))
         RandReelArray = []
         for x in range(RandomReelNum):
             RandReelArray.append(randint(0, TotalNumReels))
@@ -288,9 +288,9 @@ if __name__ == "__main__":
         for line_index in HeaderIndexList:
             TempArray = []
             for rand_index in RandReelArray:
-                TempArray.append(TempList[line_index + rand_index])
-            DictName = "Scrubbed Original High Res " + TempList[line_index][0] + " " + str(rand_index)
-            ComparisonDictionary[DictName] = TempArray
+                TempArray.append(TempList[line_index + rand_index+1])
+            DictName = "Scrubbed Original High Res " + TempList[line_index][0] #+ " " + str(rand_index+1)
+            ComparisonDictionary[DictName] = TempArray #TempList[line_index + rand_index +1]
 
         ComparisonDictionary["Scrubbed Original High Res CTRL.STBX (??)"] = [[StartingSBPos] * SBActNum] * RandomReelNum
 
@@ -308,8 +308,8 @@ if __name__ == "__main__":
         for line_index in HeaderIndexList:
             TempArray = []
             for rand_index in RandReelArray:
-                TempArray.append(TempList[line_index + rand_index])
-            DictName = "CWT-Normalized High Res " + TempList[line_index][0] + " " + str(rand_index)
+                TempArray.append(TempList[line_index + rand_index+1])
+            DictName = "CWT-Normalized High Res " + TempList[line_index][0]# + " " + str(rand_index+1)
             ComparisonDictionary[DictName] = TempArray
 
         ComparisonDictionary["CWT-Normalized High Res CTRL.STMBX (??)"] = [[StartingSBPos] * SBActNum] * RandomReelNum
@@ -327,8 +327,8 @@ if __name__ == "__main__":
         for line_index in HeaderIndexList:
             TempArray = []
             for rand_index in RandReelArray:
-                TempArray.append(TempList[line_index + rand_index])
-            DictName = "SB-Effected High Res " + TempList[line_index][0] + " " + str(rand_index)
+                TempArray.append(TempList[line_index + rand_index+1])
+            DictName = "SB-Effected High Res " + TempList[line_index][0] #+ " " + str(rand_index+1)
             ComparisonDictionary[DictName] = TempArray
 
         # Record SB-Affected Profiles (after CP readjustment)
@@ -344,14 +344,22 @@ if __name__ == "__main__":
         for line_index in HeaderIndexList:
             TempArray = []
             for rand_index in RandReelArray:
-                TempArray.append(TempList[line_index + rand_index])
-            DictName = "Final High Res " + TempList[line_index][0] + " " + str(rand_index)
+                TempArray.append(TempList[line_index + rand_index+1])
+            DictName = "Final High Res " + TempList[line_index][0] #+ " " + str(rand_index+1)
             ComparisonDictionary[DictName] = TempArray
 
         with open(ComparisonReels, 'wb') as csvfile:
             writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
             for k, v in ComparisonDictionary.iteritems():
-                writeobject.writerow([k] + v)
+                for reel in xrange(len(RandReelArray)):
+                    # temp = [k] + v[reel]
+                    temp1 = [k + " " + str(RandReelArray[reel])]
+                    temp2 = v[reel]
+                    print temp1
+                    temp = [k + " " + str(RandReelArray[reel])] + v[reel]
+                    writeobject.writerow(temp)
+                # temp = [k] + v
+                # writeobject.writerow([k] + v)
 
 
     print "Hello World"

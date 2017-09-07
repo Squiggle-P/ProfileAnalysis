@@ -48,7 +48,7 @@ if __name__ == "__main__":
         DatasetDictionary = PR.JustTheData(DatasetDictionary)
 
         if OutputCSVs:
-            print "Output scrubbed high-res data to %s." % StoreScrubbedHighResOriginal
+            print "Writing scrubbed high-res data to %s..." % StoreScrubbedHighResOriginal
             with open(StoreScrubbedHighResOriginal, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in DatasetDictionary.iteritems():
@@ -58,12 +58,11 @@ if __name__ == "__main__":
 
         # Write Some Data
         if OutputCSVs:
-            print "Outputting CSVs %s %s and %s." % (StoreRealRollAverages, StoreRealCPAverages, StoreRealSBAverages)
 
             ReelAveragesDict = {}
             CPAverages = {}
             SBAverages = {}
-
+            print "Outputting chunked Roll Averages to %s..." % StoreRealRollAverages
             with open(StoreRealRollAverages, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in DatasetDictionary.iteritems():
@@ -72,6 +71,7 @@ if __name__ == "__main__":
                     for reel in ReelAveragesDict[k]:
                         writeobject.writerow(reel)
 
+            print "Outputting chunked CP Averages to %s..." % StoreRealCPAverages
             with open(StoreRealCPAverages, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in DatasetDictionary.iteritems():
@@ -80,6 +80,7 @@ if __name__ == "__main__":
                     for actuatorbin in CPAverages[k]:
                         writeobject.writerow(actuatorbin)
 
+            print "Outputting chunked SB Averages to %s" % StoreRealSBAverages
             with open(StoreRealSBAverages, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in DatasetDictionary.iteritems():
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         # Normalize CWT using CDActuators
         All_Act_Changes = []
         # Iterate through reels CWT profiles, making adjustments to actuators. We can ignore actuator limits here (right?)
-        print "Adjusting Actuators for true moisture profile."
+        print "Adjusting CP actuators for true moisture profile..."
         for reel in DatasetDictionary["RL.CNDWT (13)"]:
             ReelAvg = numpy.mean(reel)
             ChunkAverageReel = AAR.AverageReel(reel, CPActNum)
@@ -107,7 +108,7 @@ if __name__ == "__main__":
         AdjustedReels = []
 
         # Apply adjustments to all profiles
-        print "Applying adjustments across all relevant profiles."
+        print "Applying CP actuator adjustments across all relevant profiles..."
         for k, v in DatasetDictionary.iteritems():
             AdjustedReels = []
             for reel_i in xrange(len(v)):
@@ -115,7 +116,7 @@ if __name__ == "__main__":
             TemporaryDatasetDictionary[k] = AdjustedReels
 
         if OutputCSVs:
-            print "Outputting results to new csv file: %s" % PostCPWeightDataFile
+            print "Outputting new (intermediate) profiles to %s" % PostCPWeightDataFile
             with open(PostCPWeightDataFile, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in TemporaryDatasetDictionary.iteritems():
@@ -127,7 +128,7 @@ if __name__ == "__main__":
         InitialSBProfile = [StartingSBPos] * SBActNum  # Use this to get the most profiling
         All_Act_Changes = []
         SteamboxDataset = []
-        print "Adjusting SB to correct moisture profile."
+        print "Adjusting SB to correct extreme moisture profile..."
         for reel in TemporaryDatasetDictionary["RL.MST (10)"]:
             ReelAvg = numpy.mean(reel)
             ChunkAverageReel = AAR.AverageReel(reel, SBActNum)
@@ -147,7 +148,7 @@ if __name__ == "__main__":
 
         # Apply adjustments to everything
         PostSBDict = {}
-        print "Applying changes to moisture profiles."
+        print "Applying SB actuator changes to moisture profiles..."
         for k, v in TemporaryDatasetDictionary.iteritems():
             AdjustedReels = []
             for reel_i in xrange(len(v)):
@@ -158,7 +159,7 @@ if __name__ == "__main__":
         SBGainDict["CTRL.STMBX (??)"] = 1
 
         if OutputCSVs:
-            print "Outputting to CSV: %s" % PostSBAdjustmentDataFile
+            print "Outputting new profiles to %s..." % PostSBAdjustmentDataFile
             with open(PostSBAdjustmentDataFile, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in PostSBDict.iteritems():
@@ -170,7 +171,7 @@ if __name__ == "__main__":
 
         All_Act_Changes = []
 
-        print "Adjusting CP actuators to account for new profiles"
+        print "Adjusting CP actuators to account for latest profiles..."
         for reel in TemporaryDatasetDictionary["RL.MST (10)"]:
             ReelAvg = numpy.mean(reel)
             ChunkAverageReel = AAR.AverageReel(reel, CPActNum)
@@ -188,7 +189,7 @@ if __name__ == "__main__":
             DatasetDictionary.clear()
 
         # Apply adjustments to all profiles
-        print "Applying CP changes to all profiles."
+        print "Applying CP changes to all profiles..."
         for k, v in TemporaryDatasetDictionary.iteritems():
             AdjustedReels = []
             for reel_i in xrange(len(v)):
@@ -216,7 +217,7 @@ if __name__ == "__main__":
         RollPositionList = ["A", "B", "Z"] * len(ReelAveragesDict[HeaderList[0]])
         ReelAveragesDict["pos"] = RollPositionList
 
-        print "Outputting final CSV of Roll Averages to %s." % StoreNewRollAverages
+        print "Outputting final CSV of Roll Averages to %s..." % StoreNewRollAverages
         TempList = []
         with open(StoreNewRollAverages, 'wb') as csvfile:
             writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
@@ -234,11 +235,10 @@ if __name__ == "__main__":
                 #         writeobject.writerow(reel)
 
         if OutputCSVs:
-            print "Outputting CSVs: %s, %s, & %s" % (
-            StoreAdjustedRawData, StoreAdjustedCPAverages, StoreAdjustedSBAverages)
             CPAverages = {}
             SBAverages = {}
 
+            print "Outputting New High-Res Profiles to %s..." % StoreAdjustedRawData
             with open(StoreAdjustedRawData, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in FinalReelDict.iteritems():
@@ -246,6 +246,7 @@ if __name__ == "__main__":
                     for reel in v:
                         writeobject.writerow(reel)
 
+            print "Outputting New CP Profiles to %s..." % StoreAdjustedCPAverages
             with open(StoreAdjustedCPAverages, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in FinalReelDict.iteritems():
@@ -254,6 +255,7 @@ if __name__ == "__main__":
                     for actuatorbin in CPAverages[k]:
                         writeobject.writerow(actuatorbin)
 
+            print "Outputting New SB Profiles to %s..." % StoreAdjustedSBAverages
             with open(StoreAdjustedSBAverages, 'wb') as csvfile:
                 writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
                 for k, v in FinalReelDict.iteritems():
@@ -269,6 +271,7 @@ if __name__ == "__main__":
         HeaderList = []
         HeaderIndexList = []
 
+        print "Reading High Res Original Profiles %s..." % StoreScrubbedHighResOriginal
         with open(StoreScrubbedHighResOriginal, 'rb') as csvfile:
             readobject = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONE)
             # Record every high-res profile to a list line - this is one reel per line.
@@ -285,11 +288,15 @@ if __name__ == "__main__":
         for x in range(RandomReelNum):
             RandReelArray.append(randint(0, TotalNumReels))
 
+        print "Selected random reels %s" % RandReelArray
+        print "Generating profiles for each reel..."
+
+        print "Getting Original High Res Profiles"
         for line_index in HeaderIndexList:
             TempArray = []
             for rand_index in RandReelArray:
                 TempArray.append(TempList[line_index + rand_index+1])
-            DictName = "Scrubbed Original High Res " + TempList[line_index][0] #+ " " + str(rand_index+1)
+            DictName = "Scrubbed Original High Res " + TempList[line_index][0]  # + " " + str(rand_index +1)
             ComparisonDictionary[DictName] = TempArray #TempList[line_index + rand_index +1]
 
         ComparisonDictionary["Scrubbed Original High Res CTRL.STBX (??)"] = [[StartingSBPos] * SBActNum] * RandomReelNum
@@ -299,6 +306,7 @@ if __name__ == "__main__":
 
         # Record CP-Normalization profiles
 
+        print "Getting CWT-Normalized High Res..."
         with open(PostCPWeightDataFile, 'rb') as csvfile:
             readobject = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONE)
             # Record every high-res profile to a list line - this is one reel per line.
@@ -314,15 +322,26 @@ if __name__ == "__main__":
 
         ComparisonDictionary["CWT-Normalized High Res CTRL.STMBX (??)"] = [[StartingSBPos] * SBActNum] * RandomReelNum
 
+        HeaderIndexList.append(len(TempList))
         TempList = []
         HeaderList.append("CTRL.STMBX (??)")
+
         # Record SB-Affected Profiles (before CP readjustment)
+
+        print "Getting Post-SB Adjustment High Res..."
 
         with open(PostSBAdjustmentDataFile, 'rb') as csvfile:
             readobject = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONE)
             # Record every high-res profile to a list line - this is one reel per line.
             for line in readobject:
                 TempList.append(line)
+                try:
+                    line[1]
+                except IndexError:
+                    print line[0]
+                else:
+                    pass
+                    # print line[0]
 
         for line_index in HeaderIndexList:
             TempArray = []
@@ -335,12 +354,13 @@ if __name__ == "__main__":
 
         TempList = []
 
+        print "Getting Final High Res Profiles..."
         with open(StoreAdjustedRawData, 'rb') as csvfile:
             readobject = csv.reader(csvfile, delimiter=',', quoting=csv.QUOTE_NONE)
             # Record every high-res profile to a list line - this is one reel per line.
             for line in readobject:
                 TempList.append(line)
-
+            TempList = TempList + [["0"] * 10] * 5000
         for line_index in HeaderIndexList:
             TempArray = []
             for rand_index in RandReelArray:
@@ -348,14 +368,16 @@ if __name__ == "__main__":
             DictName = "Final High Res " + TempList[line_index][0] #+ " " + str(rand_index+1)
             ComparisonDictionary[DictName] = TempArray
 
+        print "Writing high-res profiles to %s..." % ComparisonReels
+
         with open(ComparisonReels, 'wb') as csvfile:
             writeobject = csv.writer(csvfile, delimiter=',', quotechar=" ", quoting=csv.QUOTE_MINIMAL)
             for k, v in ComparisonDictionary.iteritems():
                 for reel in xrange(len(RandReelArray)):
                     # temp = [k] + v[reel]
-                    temp1 = [k + " " + str(RandReelArray[reel])]
-                    temp2 = v[reel]
-                    print temp1
+                    # temp1 = [k + " " + str(RandReelArray[reel])]
+                    # temp2 = v[reel]
+                    # print temp1
                     temp = [k + " " + str(RandReelArray[reel])] + v[reel]
                     writeobject.writerow(temp)
                 # temp = [k] + v

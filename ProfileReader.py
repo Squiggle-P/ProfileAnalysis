@@ -125,7 +125,7 @@ def ScrubStandardDictionary(ScrubMe,
     # First lets get rid of the name lines
     for k,v in ScrubMe.iteritems():
         v.pop(1)
-    print "removed namelines"
+    print "Removed namelines. Converting all profile data to float64..."
 
     # Now let's turn anything we can into a number. Stupid quotes.
     for k,v in ScrubMe.iteritems():
@@ -134,7 +134,7 @@ def ScrubStandardDictionary(ScrubMe,
             for item_index in range(len(v[reel_index])):
                 v[reel_index][item_index] = ConvertPossibleToFloat(v[reel_index][item_index])
 
-    print "Converted data to float64s"
+    print "Converted data to float64."
 
 
     # Next lets ID any reels with bad scan counts
@@ -191,6 +191,7 @@ def ScrubStandardDictionary(ScrubMe,
 
     # Now with that list, let's remove the offending reels from every dataset.
     if len(BadReelList) > 0:
+        print "Removing all invalid reels..."
         for k, v in ScrubMe.iteritems():
             reel_index = 0
             while reel_index < len(v):
@@ -198,6 +199,7 @@ def ScrubStandardDictionary(ScrubMe,
                     v.pop(reel_index)
                 else:
                     reel_index = reel_index + 1
+    print "Invalid reels removed."
                     # for reel_index in range(len(v)-1):
                     #     if v[reel_index][0] in BadReelList:
                     #         v.pop(reel_index)
@@ -209,7 +211,7 @@ def JustTheData(DictionaryIn):
     # Take in dictionary of datasets, spit out dictionary with only timestamp and pos1-pos1120
 
     NewDict = {}
-
+    print "Stripping profiles to only data..."
     for k,v in DictionaryIn.iteritems():
         TempArrayArray = []
         for reel_index in range(len(v)-1):
@@ -228,7 +230,7 @@ def JustTheData(DictionaryIn):
                 #     print v[reel_index].pop(item_index)
 
         NewDict[k] = TempArrayArray
-    print "Stripped profiles to only data."
+    print "Profiles stripped."
     return NewDict
 
 

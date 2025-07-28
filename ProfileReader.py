@@ -8,6 +8,7 @@ Created 08/25/17/PP - [R0]
 Edited  MM/DD/YY/NN - [R1]
 
 """
+from __future__ import print_function
 
 # Libraries
 import csv
@@ -30,13 +31,13 @@ def CSV2Arrays(csvfile,ReturnDict = False):
     ArrayOfArrays = []
     DictOfArrays = {}
     RawRead = []
-    print "Opening file %s." % csvfile
+    print("Opening file %s." % csvfile)
     with open(csvfile, 'rb') as CSVFile:
         CSVReader = csv.reader(CSVFile,delimiter=',')
         for line in CSVReader:
             RawRead.append(line)
     # File read, close it up
-    print "File read, closed."
+    print("File read, closed.")
     # Mark the header and replace it with zeros just to make the next loop cleaner
     HeaderArray = RawRead[0]
 
@@ -45,7 +46,7 @@ def CSV2Arrays(csvfile,ReturnDict = False):
     # Store in temporary list to write to dictionary - reduces memory load
     Temp = [HeaderArray]
 
-    print "Processing %s lines..." % len(RawRead)
+    print("Processing %s lines..." % len(RawRead))
 
     for line in range(len(RawRead))[1:]:
 
@@ -81,9 +82,9 @@ def ScrubArrays(HeaderArray,ReelArrays,*Limits, **OtherLimits):
     except ValueError:
         try:
             ReelNumCol = HeaderArray.index("Gauge Reel Number")
-            print "PPR Reel Numbers are preferred but not found - using Gauge Reel Number"
+            print("PPR Reel Numbers are preferred but not found - using Gauge Reel Number")
         except ValueError:
-            print "Could not find Reel Number - proceeding without."
+            print("Could not find Reel Number - proceeding without.")
 
     # TimeCol = HeaderArray.index("PPR Reel Number")
     ScanCol = HeaderArray.index("Number of Scans")
@@ -125,7 +126,7 @@ def ScrubStandardDictionary(ScrubMe,
     # First lets get rid of the name lines
     for k,v in ScrubMe.iteritems():
         v.pop(1)
-    print "Removed namelines. Converting all profile data to float64..."
+    print("Removed namelines. Converting all profile data to float64...")
 
     # Now let's turn anything we can into a number. Stupid quotes.
     for k,v in ScrubMe.iteritems():
@@ -134,7 +135,7 @@ def ScrubStandardDictionary(ScrubMe,
             for item_index in range(len(v[reel_index])):
                 v[reel_index][item_index] = ConvertPossibleToFloat(v[reel_index][item_index])
 
-    print "Converted data to float64."
+    print("Converted data to float64.")
 
 
     # Next lets ID any reels with bad scan counts
@@ -144,7 +145,7 @@ def ScrubStandardDictionary(ScrubMe,
             if int(reel[ScanCol]) < LowScanLimit or int(reel[ScanCol]) > HighScanLimit:
                 BadReelList.append(reel[0])
     BadScanCount = len(BadReelList)
-    print "Found %s reels with bad scan counts" % len(BadReelList)
+    print("Found %s reels with bad scan counts" % len(BadReelList))
 
     # And any reels with bad moisture averages
     if LowMoiLimit or HighMoiLimit:
@@ -161,7 +162,7 @@ def ScrubStandardDictionary(ScrubMe,
                 BadReelList.append(reel[0])
     BadMoiCount = len(BadReelList) - BadScanCount
 
-    print "Found %s reels with bad moisture averages." % BadMoiCount
+    print("Found %s reels with bad moisture averages." % BadMoiCount)
 
     # Aaaand reels with bad weight averages...
     if LowWtLimit or HighWtLimit:
@@ -178,7 +179,7 @@ def ScrubStandardDictionary(ScrubMe,
                 # print reel[BWCol]
 
     BadWtCount = len(BadReelList) - (BadScanCount + BadMoiCount)
-    print "Found %s reels with bad weight averages" % BadWtCount
+    print("Found %s reels with bad weight averages" % BadWtCount)
 
     # Finally let's scrub for grade
     if len(GradeList) > 0:
@@ -187,11 +188,11 @@ def ScrubStandardDictionary(ScrubMe,
             if reel[GradeCol] not in GradeList:
                 BadReelList.append(reel[0])
     BadGradeCt = len(BadReelList) - (BadScanCount + BadMoiCount + BadWtCount)
-    print "Found %s reels with incorrect / bad PMP Grade Code." % BadGradeCt
+    print("Found %s reels with incorrect / bad PMP Grade Code." % BadGradeCt)
 
     # Now with that list, let's remove the offending reels from every dataset.
     if len(BadReelList) > 0:
-        print "Removing all invalid reels..."
+        print("Removing all invalid reels...")
         for k, v in ScrubMe.iteritems():
             reel_index = 0
             while reel_index < len(v):
@@ -199,7 +200,7 @@ def ScrubStandardDictionary(ScrubMe,
                     v.pop(reel_index)
                 else:
                     reel_index = reel_index + 1
-    print "Invalid reels removed."
+    print("Invalid reels removed.")
                     # for reel_index in range(len(v)-1):
                     #     if v[reel_index][0] in BadReelList:
                     #         v.pop(reel_index)
@@ -211,7 +212,7 @@ def JustTheData(DictionaryIn):
     # Take in dictionary of datasets, spit out dictionary with only timestamp and pos1-pos1120
 
     NewDict = {}
-    print "Stripping profiles to only data..."
+    print("Stripping profiles to only data...")
     for k,v in DictionaryIn.iteritems():
         TempArrayArray = []
         for reel_index in range(len(v)-1):
@@ -230,12 +231,12 @@ def JustTheData(DictionaryIn):
                 #     print v[reel_index].pop(item_index)
 
         NewDict[k] = TempArrayArray
-    print "Profiles stripped."
+    print("Profiles stripped.")
     return NewDict
 
 
 if __name__ == "__main__":
-    print "Hello World"
+    print("Hello World")
 
 
     DatasetDictionary = CSV2Arrays("TestData.csv",True)

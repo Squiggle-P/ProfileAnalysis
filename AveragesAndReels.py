@@ -1,7 +1,7 @@
 """ Boilerplate Info
 AveragesAndReels.PY - Functions for binning and averaging multiple reels together
-*
-*
+* 
+* 
 
 Created 08/27/17/PP - [R0]:
 
@@ -10,6 +10,7 @@ Created 08/27/17/PP - [R0]:
 Edited  MM/DD/YY/NN - [R1]:
 
 """
+from __future__ import print_function
 
 import ProfileReader as PR
 from math import isnan
@@ -22,7 +23,7 @@ def Chunk2(ChunkMe, ChunkCount=3):
     """
     TempArray = []
     k, m = divmod(len(ChunkMe), ChunkCount)
-    for i in xrange(ChunkCount):
+    for i in range(ChunkCount):
         TempArray.append(ChunkMe[i * k + min(i, m):(i + 1) * k + min(i + 1, m)])
     # return (ChunkMe[i*k+min(i,m),:(i+1) * k + min(i+1,m)] for i in range(ChunkCount))
     return TempArray
@@ -37,7 +38,7 @@ def ChunkList(ChunkMe,ChunkCount = 3):
     TempArray = []
     k = float(len(ChunkMe)) / ChunkCount
     # k, m = divmod(len(ChunkMe),ChunkCount)
-    for i in xrange(ChunkCount):
+    for i in range(ChunkCount):
         TempArray.append(ChunkMe[int(round(i * k, 0)):int(round((i + 1) * k, 0))])
     # return (ChunkMe[i*k+min(i,m),:(i+1) * k + min(i+1,m)] for i in range(ChunkCount))
     return TempArray
@@ -91,8 +92,8 @@ def AdjustProfile(InitialProfile, ChangeProfile, Gain):
 
     # Take a profile broken into actuator-associated chunks, apply changes based on movements in actuator
     # This is all assuming a flat response from the actuator. Let's not get any deeper, shall we?
-    for chunk_index in xrange(len(ChunkedProfile)):
-        for bin_index in xrange(len(ChunkedProfile[chunk_index])):
+    for chunk_index in range(len(ChunkedProfile)):
+        for bin_index in range(len(ChunkedProfile[chunk_index])):
             ChunkedProfile[chunk_index][bin_index] = ChunkedProfile[chunk_index][bin_index] + ChangeProfile[
                                                                                                   chunk_index] * Gain
 
@@ -104,7 +105,7 @@ def AdjustProfile(InitialProfile, ChangeProfile, Gain):
     return NewProfile
 
 if __name__ == "__main__":
-    print "Hello World"
+    print("Hello World")
 
     import csv
 
